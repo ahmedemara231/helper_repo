@@ -26,14 +26,14 @@ class PermissionManager{
     bool openSetting = false
   })async{
     permission = selectedPermission;
-    await askForPermission(
+    await _askForPermission(
       onPermissionGranted: onGranted,
       onPermissionDenied: onDenied,
       openSetting: openSetting,
     );
   }
 
-  Future<void> askForPermission({
+  Future<void> _askForPermission({
     FutureOr<void> Function(Permission permission)? onPermissionGranted,
     FutureOr<void> Function(Permission permission)? onPermissionDenied,
     bool openSetting = false

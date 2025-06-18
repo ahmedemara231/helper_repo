@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:helper_repo/widgets/internet_supporter_widget/test.dart';
 import 'package:helper_repo/widgets/socket_widget/test.dart';
 
+import 'helpers/permission_handler/test.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -33,7 +35,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const SocketImplementerTest(),
+      home: const PermissionTest(),
     );
   }
 }
