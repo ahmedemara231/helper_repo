@@ -57,10 +57,15 @@ class Helpers{
 
   static Future<void> manageBlocListener(BaseStatus baseStatus, {
     String? msg,
-    Function? actionWhenSuccess,
-    Function? actionWhenError,
+    FutureOr<void> Function()? actionWhenSuccess,
+    FutureOr<void> Function()? actionWhenError,
+    FutureOr<void> Function()? actionWhenLoading,
   }) async{
     switch(baseStatus){
+      case BaseStatus.loading:
+        if(actionWhenLoading != null){
+          await actionWhenLoading();
+        }
       case BaseStatus.success:
         if(msg != null){
           // MessageUtils.showSimpleToast(msg: msg);
@@ -71,7 +76,9 @@ class Helpers{
         break;
 
       case BaseStatus.error:
-        // MessageUtils.showSimpleToast(msg: msg ?? LocaleKeys.thereIsErrorOccurs, color: Colors.red);
+        if(msg != null){
+          // MessageUtils.showSimpleToast(msg: msg ?? LocaleKeys.thereIsErrorOccurs, color: Colors.red);
+        }
         if(actionWhenError != null){
           await actionWhenError();
         }
