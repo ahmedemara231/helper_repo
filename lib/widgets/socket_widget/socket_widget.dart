@@ -1,13 +1,18 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'factory.dart';
 
 class SocketWidget<T> extends StatefulWidget {
-  final SocketHelper socket;
+  final SocketHelper socketType;
+  final FutureOr<void> Function(BuildContext context)? onConnect;
+  final FutureOr<void> Function(BuildContext context)? onDisconnect;
   final Widget Function(BuildContext context, AsyncSnapshot<T> snapshot) builder;
 
   const SocketWidget({super.key,
-    required this.socket,
-    required this.builder
+    required this.socketType,
+    required this.builder,
+    this.onConnect,
+    this.onDisconnect
   });
 
   @override
@@ -16,36 +21,36 @@ class SocketWidget<T> extends StatefulWidget {
 
 class _SocketWidgetState<T> extends State<SocketWidget<T>> {
 
+  Future<void> _startServerConnection()async{
+    widget.socketType.connect();
+    if(widget.onConnect != null) {
+      widget.onConnect!(context);
+    }
+  }
+
+  Future<void> _stopServerConnection()async{
+    widget.socketType.disconnect();
+    if(widget.onDisconnect != null) {
+      widget.onDisconnect!(context);
+    }
+  }
   @override
   void initState() {
-    widget.socket.connect();
+    _startServerConnection();
     super.initState();
   }
 
   @override
   void dispose() {
-    widget.socket.disconnect();
+    _stopServerConnection();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<T>(
-      stream: widget.socket.onReceiveMessage() as Stream<T>,
+      stream: widget.socketType.onReceiveMessage() as Stream<T>,
       builder: widget.builder,
     );
   }
 }
-
-// class SocketTest extends StatelessWidget {
-//   const SocketTest({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: SocketWidget<String>(
-//           socket: SignalRImpl(url: url, jsonToChatMessage: jsonToChatMessage),
-//           builder: (context, snapshot) => ,
-//       ),
-//     );
-//   }
-// }
