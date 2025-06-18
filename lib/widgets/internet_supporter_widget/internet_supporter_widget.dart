@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'factory.dart';
@@ -36,6 +35,7 @@ class _InternetSupporterWidgetState extends State<InternetSupporterWidget> {
     await _getInitialStatus();
     internetCheck.start((connectionStatus) =>
         setState(() {
+          flag = 1;
           widget.onChanged(connectionStatus);
           internetCheck.status = connectionStatus;
         })
@@ -48,6 +48,22 @@ class _InternetSupporterWidgetState extends State<InternetSupporterWidget> {
     super.initState();
   }
 
+  Widget get _buildInitialView{
+    if(widget.onInitialStatusBuilder != null){
+      return widget.onInitialStatusBuilder!(internetCheck.status);
+    }
+    return widget.builder(internetCheck.status);
+  }
+
+  int flag = 0;
+  Widget get _buildStatusView{
+    if(flag == 0){
+      return _buildInitialView;
+    }else{
+      return widget.builder(internetCheck.status);
+    }
+  }
+
   @override
   void dispose() {
     internetCheck.stop();
@@ -56,6 +72,6 @@ class _InternetSupporterWidgetState extends State<InternetSupporterWidget> {
   @override
   Widget build(BuildContext context) {
     return _loading? Center(child: const CircularProgressIndicator()) :
-    widget.builder(internetCheck.status);
+    _buildStatusView;
   }
 }
