@@ -2,23 +2,27 @@
 
 class InternetCheck{
   late InternetConnectionChecker connectionChecker;
+  late InternetConnectionStatus status;
+
   void init(){
     connectionChecker = InternetConnectionChecker.instance
       ..configure(slowConnectionConfig: SlowConnectionConfig(enableToCheckForSlowConnection: true))
     ..checkTimeout = Duration(seconds: 5);
   }
 
-  void start(Function(InternetConnectionStatus connectionStatus) onChanged)async{
-    connectionChecker.onStatusChange.listen(
-            (event) => onChanged(event)
-    );
+  Future<void> getInitialStatus()async{
+    status = await _currentStatus;
+  }
+
+  void start(void Function(InternetConnectionStatus connectionStatus)? onChanged)async{
+    connectionChecker.onStatusChange.listen(onChanged);
   }
 
   Future<void> stop()async{
     connectionChecker.dispose();
   }
 
-  Future<InternetConnectionStatus> get currentStatus async{
+  Future<InternetConnectionStatus> get _currentStatus async{
     return await connectionChecker.connectionStatus;
   }
 }

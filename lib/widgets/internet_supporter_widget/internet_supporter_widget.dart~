@@ -33,7 +33,7 @@ class _InternetSupporterWidgetState extends State<InternetSupporterWidget> {
 
   Future<void> _init()async{
     internetCheck = InternetCheck()..init();
-    await _getInitialStatus();
+    // await _getInitialStatus();
     internetCheck.start((connectionStatus) =>
         setState(() {
           widget.onChanged(connectionStatus);
