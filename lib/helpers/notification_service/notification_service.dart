@@ -136,14 +136,15 @@ class NotificationService {
         whenDenied();
         onPermissionDenied?.call();
       }
-    }else{
-      final wasAcceptedBefore = await CacheStorage.read(isPermissionAcceptedBefore) ?? false;
-      if(!wasAcceptedBefore){
-        await CacheStorage.write(isPermissionAcceptedBefore, true);
-        whenGranted();
-        onPermissionGranted?.call();
-      }
     }
+    // else{
+    //   final wasAcceptedBefore = await CacheStorage.read(isPermissionAcceptedBefore) ?? false;
+    //   if(!wasAcceptedBefore){
+    //     await CacheStorage.write(isPermissionAcceptedBefore, true);
+    //     whenGranted();
+    //     onPermissionGranted?.call();
+    //   }
+    // }
   }
 
   final String isPermissionAcceptedBefore = 'isPermissionAcceptedBefore';

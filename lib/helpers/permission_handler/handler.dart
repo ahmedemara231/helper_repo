@@ -57,10 +57,5 @@ class PermissionManager{
           }
       }
     }
-    else {
-      if (onPermissionGranted != null) {
-        onPermissionGranted(permission);
-      }
-    }
   }
 }
