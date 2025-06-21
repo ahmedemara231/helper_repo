@@ -62,24 +62,19 @@ class Helpers{
   }) async{
     switch(baseStatus){
       case BaseStatus.loading:
-        if(actionWhenLoading != null){
-          await actionWhenLoading();
-        }
+          await actionWhenLoading?.call();
+
       case BaseStatus.success:
+        await actionWhenSuccess?.call();
         if(msg != null){
           // MessageUtils.showSimpleToast(msg: msg);
-        }
-        if(actionWhenSuccess != null){
-          await actionWhenSuccess();
         }
         break;
 
       case BaseStatus.error:
+        await actionWhenError?.call();
         if(msg != null){
           // MessageUtils.showSimpleToast(msg: msg ?? LocaleKeys.thereIsErrorOccurs, color: Colors.red);
-        }
-        if(actionWhenError != null){
-          await actionWhenError();
         }
         break;
 
