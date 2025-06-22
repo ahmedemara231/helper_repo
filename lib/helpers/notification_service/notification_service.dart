@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:helper_repo/helpers/cache.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
 
 class NotificationService {
   NotificationService({
@@ -111,6 +114,61 @@ class NotificationService {
     await _localNotification.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
+  }
+
+  Future<void> cancelNotification({int? notificationId})async{
+    if(notificationId != null){
+      await _localNotification.cancel(notificationId);
+    }else{
+      await _localNotification.cancelAll();
+    }
+  }
+
+  Future<void> periodicallyShow({
+    required RemoteMessage message,
+    required RepeatInterval repeatInterval
+  }) async{
+    await _localNotification.periodicallyShow( // android only
+        message.hashCode,
+        message.notification?.title,
+        message.notification?.body,
+        repeatInterval,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        _notificationDetails,
+        payload: jsonEncode(message.toMap())
+    );
+  }
+
+  Future<void> periodicallyShowWithSpecificDuration({
+    required RemoteMessage message,
+    required Duration duration
+  }) async{
+    await _localNotification.periodicallyShowWithDuration( // android only
+        message.hashCode,
+        message.notification?.title,
+        message.notification?.body,
+        duration,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        _notificationDetails,
+        payload: jsonEncode(message.toMap())
+    );
+  }
+
+  Future<void> zonedScheduleShowing({
+    required RemoteMessage message,
+    required Duration duration
+  })async{
+    tz.initializeTimeZones();
+    _localNotification.zonedSchedule(
+      message.hashCode,
+      message.notification?.title,
+      message.notification?.body,
+      tz.TZDateTime.now(tz.local).add(duration),
+      _notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      payload: jsonEncode(message.toMap()),
+    );
   }
 
   Future<void> _requestPermissions(Function() whenGranted, Function() whenDenied)async{
