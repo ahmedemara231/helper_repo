@@ -5,9 +5,9 @@ import 'package:app_links/app_links.dart';
 
 abstract interface class DeepLinkingService{
   FutureOr<void> init();
-  Future<void> handleLinkStates();
-  void printLink(Uri link){
-    log(link.path.toString());
+  Future<void> handleLinkStates(String? link);
+  void printLink(String? link){
+    log();
   }
 }
 
@@ -22,16 +22,12 @@ class AppLinksImpl extends DeepLinkingService{
   }
 
   @override
-  Future<void> handleLinkStates()async{
+  Future<void> handleLinkStates(String? link)async{
     await init();
     final Uri? result = await appLinks.getInitialLink();
     if(result != null){
       onOpenLink(result);
-      printLink(result);
     }
-    appLinks.uriLinkStream.listen((event) {
-      onOpenLink(event);
-      printLink(event);
-    });
+    appLinks.uriLinkStream.listen((event) => onOpenLink(event));
   }
 }
