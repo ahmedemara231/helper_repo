@@ -183,7 +183,7 @@ class NotificationService {
   Future<void> _iosPermission(Function() whenGranted, Function() whenDenied)async{
     final result = await _localNotification.resolvePlatformSpecificImplementation<
         IOSFlutterLocalNotificationsPlugin>()?.checkPermissions();
-    if(result != null && !result.isEnabled){
+    if(!result!.isEnabled){
       final requestResult = await _localNotification.resolvePlatformSpecificImplementation<
           IOSFlutterLocalNotificationsPlugin>()?.requestPermissions(alert: true, badge: true, sound: true);
       if(requestResult?? false){
