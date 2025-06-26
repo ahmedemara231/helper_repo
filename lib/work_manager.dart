@@ -1,0 +1,41 @@
+import 'package:workmanager/workmanager.dart';
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) {
+    print("Native called background task: $task"); //simpleTask will be emitted here.
+    return Future.value(true);
+  });
+}
+
+class WorkManagerHandler{
+  void init(){
+    Workmanager().initialize(
+        callbackDispatcher,
+        isInDebugMode: true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
+    );
+  }
+
+  Future<void> registerTask({
+    required String taskIdentifier,
+    required String taskName,
+})async{
+    await Workmanager().registerOneOffTask(taskIdentifier, taskName);
+  }
+
+  Future<void> registerPeriodicTask({
+    required String taskIdentifier,
+    required String taskName,
+  })async{
+    await Workmanager().registerPeriodicTask(taskIdentifier, taskName);
+  }
+
+
+  Future<void> cancelAll()async{
+    await Workmanager().cancelAll();
+  }
+
+  Future<void> cancelWithUniqueName(String uniqueName)async{
+    await Workmanager().cancelByUniqueName(uniqueName);
+  }
+}
