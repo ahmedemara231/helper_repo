@@ -119,23 +119,7 @@ class AppLifecycleService {
   factory AppLifecycleService() => _instance;
   AppLifecycleService._internal();
 
-  final List<Function(AppLifecycleState)> _listeners = [];
   AppLifecycleState? _currentState;
-
-  void addListener(Function(AppLifecycleState) listener) {
-    _listeners.add(listener);
-  }
-
-  void removeListener(Function(AppLifecycleState) listener) {
-    _listeners.remove(listener);
-  }
-
-  void _notifyListeners(AppLifecycleState state) {
-    _currentState = state;
-    for (var listener in _listeners) {
-      listener(state);
-    }
-  }
 
   AppLifecycleState? get currentState => _currentState;
 
