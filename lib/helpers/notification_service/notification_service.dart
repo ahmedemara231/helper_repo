@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -13,14 +15,16 @@ class NotificationService {
     required this.onNotificationTap,
     this.channels,
     this.onPermissionGranted,
-    this.onPermissionDenied
+    this.onPermissionDenied,
+    this.actions,
   });
 
-  final Function()? onPermissionGranted;
-  final Function()? onPermissionDenied;
+  final FutureOr<void> Function()? onPermissionGranted;
+  final FutureOr<void> Function()? onPermissionDenied;
 
   final List<AndroidNotificationChannel>? channels;
   final Function(RemoteMessage message) onNotificationTap;
+  final List<AndroidNotificationAction>? actions;
 
 
   Future<void> setUpNotificationsService() async {
@@ -233,17 +237,20 @@ class NotificationService {
       channelShowBadge: true,
       enableLights: true,
       playSound: true,
+      actions: actions,
+      // ticker: text shown in status bar when notification is shown in older versions of android
     );
 
     const DarwinNotificationDetails iosNotificationDetails = DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentBanner: true,
-        presentSound: true
+      presentAlert: true,
+      presentBadge: true,
+      presentBanner: true,
+      presentSound: true,
     );
+
     final NotificationDetails details = NotificationDetails(
         android: androidNotificationDetails,
-        iOS: iosNotificationDetails
+        iOS: iosNotificationDetails,
     );
     return details;
   }
