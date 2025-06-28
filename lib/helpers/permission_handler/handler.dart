@@ -43,19 +43,17 @@ class PermissionManager{
       PermissionStatus status = await permission.request();
       switch(status) {
         case PermissionStatus.granted:
-          if(onPermissionGranted != null){
-            onPermissionGranted(permission);
-          }
+            onPermissionGranted?.call(permission);
 
         default:
-          if(onPermissionDenied != null){
-            onPermissionDenied(permission);
-          }
+          onPermissionDenied?.call(permission);
 
           if(openSetting){
             openAppSettings();
           }
       }
+    }else{
+      onPermissionGranted?.call(permission);
     }
   }
 }

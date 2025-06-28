@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:permission_handler/permission_handler.dart';
 import 'model.dart';
-stl
+
 class PermissionManager{
   late Permission permission;
 
