@@ -26,7 +26,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     log('done');
-    NotificationService(onNotificationTap: (message) {}).periodicallyShow(
+    NotificationService(
+      onReceiveForegroundNotification: (msg){},
+        onNotificationTap: (message) {}).periodicallyShow(
         message: RemoteMessage(notification: RemoteNotification(title: 'title', body: 'body')),
         repeatInterval: RepeatInterval.everyMinute
     );

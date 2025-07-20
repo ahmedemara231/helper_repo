@@ -9,23 +9,24 @@ import 'package:helper_repo/helpers/cache.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-
 class NotificationService {
+
   NotificationService({
     required this.onNotificationTap,
+    required this.onReceiveForegroundNotification,
     this.channels,
     this.onPermissionGranted,
     this.onPermissionDenied,
     this.actions,
   });
 
+  final FutureOr<void> Function(RemoteMessage message) onReceiveForegroundNotification;
   final FutureOr<void> Function()? onPermissionGranted;
   final FutureOr<void> Function()? onPermissionDenied;
 
   final List<AndroidNotificationChannel>? channels;
   final Function(RemoteMessage message) onNotificationTap;
   final List<AndroidNotificationAction>? actions;
-
 
   Future<void> setUpNotificationsService() async {
     await _requestPermissions(
@@ -60,7 +61,10 @@ class NotificationService {
 
   Future<void> _handleReceivedForegroundNotification() async {
     FirebaseMessaging.onMessage
-        .listen((event) => _showNotification(event)); // show local notification
+        .listen((event) {
+      _showNotification(event);
+      onReceiveForegroundNotification(event);
+    }); // show local notification
   }
 
   final FlutterLocalNotificationsPlugin _localNotification = FlutterLocalNotificationsPlugin();
