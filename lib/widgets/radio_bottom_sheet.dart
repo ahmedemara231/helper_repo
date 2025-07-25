@@ -11,6 +11,7 @@ class RadioBottomSheet<T> extends StatefulWidget {
   final Color? btnColor;
   final String? btnTitle;
   final double? btnHeight;
+  final T? initialValue;
 
   const RadioBottomSheet({super.key,
     required this.title,
@@ -19,7 +20,8 @@ class RadioBottomSheet<T> extends StatefulWidget {
     required this.titles,
     this.btnColor,
     this.btnTitle,
-    this.btnHeight
+    this.btnHeight,
+    this.initialValue
   }) : assert(values.length == titles.length);
 
   @override
@@ -32,6 +34,11 @@ class _RadioBottomSheetState<T> extends State<RadioBottomSheet<T>> {
     setState(() => groupValue = newVal);
   }
 
+  @override
+  void initState() {
+    groupValue = widget.initialValue;
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return IntrinsicHeight(
