@@ -6,13 +6,11 @@ class PermissionManagerModel{
   final FutureOr<void> Function(Permission permission)? onGranted;
   final FutureOr<void> Function(Permission permission)? onDenied;
   final FutureOr<void> Function(Permission permission)? onDeniedForever;
-  final FutureOr<void> Function(Permission permission)? onPermissionLimited;
 
   PermissionManagerModel({
     required this.permissions,
     this.onGranted,
     this.onDenied,
     this.onDeniedForever,
-    this.onPermissionLimited
   });
 }
