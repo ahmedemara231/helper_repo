@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'factory.dart';
@@ -10,13 +8,11 @@ class InternetSupporterWidget extends StatefulWidget {
   final FutureOr<void> Function(InternetConnectionStatus connectionStatus) onChanged;
   final Widget Function(InternetConnectionStatus connectionStatus) builder;
   final Widget Function(InternetConnectionStatus connectionStatus)? onInitialStatusBuilder;
-  final Widget? loadingWidget;
 
   const InternetSupporterWidget({super.key,
     required this.onChanged,
     required this.builder,
     this.onInitialStatusBuilder,
-    this.loadingWidget,
   });
 
   @override
@@ -73,21 +69,9 @@ class _InternetSupporterWidgetState extends State<InternetSupporterWidget> {
     internetCheck.stop();
     super.dispose();
   }
-
-  Widget get _platformLoading{
-    if(Platform.isIOS){
-      return const CupertinoActivityIndicator();
-    }else{
-      return const CircularProgressIndicator();
-    }
-  }
-
-  Widget get _loadingView{
-    return widget.loadingWidget ?? _platformLoading;
-  }
   @override
   Widget build(BuildContext context) {
-    return _loading? Center(child: _loadingView) :
+    return _loading? Center(child: const CircularProgressIndicator()) :
     _buildStatusView;
   }
 }
