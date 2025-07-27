@@ -43,45 +43,6 @@ extension BasseStatusExt on BaseStatus {
 
 
 class Helpers{
-
-  static void navigateWithCubit<T extends Cubit>(BuildContext context, {required Widget page}){
-    Go.to(
-        BlocProvider.value(
-          value: context.read<T>(),
-          child: page,
-        )
-    );
-  }
-  static Future<void> manageBlocListener(BaseStatus baseStatus, {
-    String? msg,
-    FutureOr<void> Function()? actionWhenSuccess,
-    FutureOr<void> Function()? actionWhenError,
-    FutureOr<void> Function()? actionWhenLoading,
-  }) async{
-    switch(baseStatus){
-      case BaseStatus.loading:
-        await actionWhenLoading?.call();
-
-      case BaseStatus.success:
-        await actionWhenSuccess?.call();
-        if(msg != null){
-          // MessageUtils.showSimpleToast(msg: msg, color: AppColors.primary);
-        }
-        break;
-
-      case BaseStatus.error:
-        await actionWhenError?.call();
-        if(msg != null){
-          // MessageUtils.showSimpleToast(msg: msg, color: Colors.red);
-        }
-        break;
-
-      default:
-        return;
-    }
-  }
-
-
   static String get deviceType => Platform.isIOS? "ios" : "android";
 
   static bool isBlocProvided<T extends StateStreamableSource>(BuildContext context) {
@@ -90,6 +51,35 @@ class Helpers{
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  static Future<void> manageBlocListener(BaseStatus baseStatus, {
+    String? msg,
+    FutureOr<void> Function()? actionWhenSuccess,
+    FutureOr<void> Function()? actionWhenError,
+    FutureOr<void> Function()? actionWhenLoading,
+  }) async{
+    switch(baseStatus){
+      case BaseStatus.loading:
+          await actionWhenLoading?.call();
+
+      case BaseStatus.success:
+        await actionWhenSuccess?.call();
+        if(msg != null){
+          // MessageUtils.showSimpleToast(msg: msg);
+        }
+        break;
+
+      case BaseStatus.error:
+        await actionWhenError?.call();
+        if(msg != null){
+          // MessageUtils.showSimpleToast(msg: msg ?? LocaleKeys.thereIsErrorOccurs, color: Colors.red);
+        }
+        break;
+
+      default:
+        return;
     }
   }
 }
