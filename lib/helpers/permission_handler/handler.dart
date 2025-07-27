@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:permission_handler/permission_handler.dart';
 import 'model.dart';
 
-class PermissionManager{
+class PermissionHandler{
   late Permission permission;
 
   Future<void> checkPermission({
-    required PermissionManagerModel permissionManagerModel,
+    required PermissionModel permissionManagerModel,
     bool openSetting = false
   }) async {
     for(Permission permission in permissionManagerModel.permissions){

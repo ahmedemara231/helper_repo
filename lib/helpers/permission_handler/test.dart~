@@ -14,8 +14,8 @@ class PermissionTest extends StatefulWidget {
 
 class _PermissionTestState extends State<PermissionTest> {
   void _checkPermissions(){
-    PermissionHandler().checkPermission(
-        permissionManagerModel: PermissionModel(
+    PermissionManager().checkPermission(
+        permissionManagerModel: PermissionManagerModel(
           permissions: [Permission.storage, Permission.camera],
           onGranted: (permission) => log('the permission $permission is granted'),
           onDenied: (permission) => log('the permission $permission is denied'),
