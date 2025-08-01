@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 class AppLifecycleManager extends StatefulWidget {
   final Widget child;
   final Function(AppLifecycleState state)? onStateChanged;
-  final VoidCallback? onResumed;
-  final VoidCallback? onPaused;
-  final VoidCallback? onInactive;
-  final VoidCallback? onDetached;
-  final VoidCallback? onHidden;
+  final VoidCallback? onResumed; // App is in the foreground and interactive.
+  final VoidCallback? onPaused; // in background
+  final VoidCallback? onInactive; // 	App is in an inactive state (e.g. a phone call overlay). Not receiving user input.
+  final VoidCallback? onDetached; // rarely used
+  final VoidCallback? onHidden; // in ios
 
   const AppLifecycleManager({
     super.key,
@@ -42,37 +42,6 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager>
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-
-    // Call the general state change callback
-    widget.onStateChanged?.call(state);
-
-    // Handle specific state changes
-    switch (state) {
-      case AppLifecycleState.resumed:
-        _handleAppResumed();
-        break;
-      case AppLifecycleState.paused:
-        _handleAppPaused();
-        break;
-      case AppLifecycleState.inactive:
-        _handleAppInactive();
-        break;
-      case AppLifecycleState.detached:
-        _handleAppDetached();
-        break;
-      case AppLifecycleState.hidden:
-        _handleAppHidden();
-        break;
-    }
-
-    _lastLifecycleState = state;
-
-    // Log state change for debugging
-    debugPrint('App lifecycle state changed: ${state.name}');
-  }
 
   void _handleAppResumed() {
     debugPrint('App is in FOREGROUND (resumed)');
@@ -105,6 +74,35 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager>
     debugPrint('App is HIDDEN');
     widget.onHidden?.call();
     // App is hidden (iOS specific)
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    widget.onStateChanged?.call(state);
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _handleAppResumed();
+        break;
+      case AppLifecycleState.paused:
+        _handleAppPaused();
+        break;
+      case AppLifecycleState.inactive:
+        _handleAppInactive();
+        break;
+      case AppLifecycleState.detached:
+        _handleAppDetached();
+        break;
+      case AppLifecycleState.hidden:
+        _handleAppHidden();
+        break;
+    }
+
+    _lastLifecycleState = state;
+
+    // Log state change for debugging
+    debugPrint('App lifecycle state changed: ${state.name}');
   }
 
   @override
