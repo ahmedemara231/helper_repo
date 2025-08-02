@@ -27,8 +27,7 @@ class LoadingBtn extends StatelessWidget {
   Future<void> asyncCall(BuildContext context)async{
     try {
       _easyButtonState = EasyButtonState.loading;
-      // await call(context);
-      await Future.delayed(const Duration(seconds: 2));
+      await call(context);
       _easyButtonState = EasyButtonState.idle;
     } finally {
       _easyButtonState = EasyButtonState.idle;
