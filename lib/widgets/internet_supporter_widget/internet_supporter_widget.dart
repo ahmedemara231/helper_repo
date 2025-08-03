@@ -1,29 +1,27 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'factory.dart';
 
-class InternetSupporterWidget extends StatefulWidget {
+class InternetInterceptorWidget extends StatefulWidget {
 
+  final Widget? loadingWidget;
   final FutureOr<void> Function(InternetConnectionStatus connectionStatus) onChanged;
   final Widget Function(InternetConnectionStatus connectionStatus) builder;
   final Widget Function(InternetConnectionStatus connectionStatus)? onInitialStatusBuilder;
-  final Widget? loadingWidget;
 
-  const InternetSupporterWidget({super.key,
+  const InternetInterceptorWidget({super.key,
+    this.loadingWidget,
     required this.onChanged,
     required this.builder,
     this.onInitialStatusBuilder,
-    this.loadingWidget,
   });
 
   @override
-  State<InternetSupporterWidget> createState() => _InternetSupporterWidgetState();
+  State<InternetInterceptorWidget> createState() => _InternetInterceptorWidgetState();
 }
 
-class _InternetSupporterWidgetState extends State<InternetSupporterWidget> {
+class _InternetInterceptorWidgetState extends State<InternetInterceptorWidget> {
 
   late InternetCheck internetCheck;
 
@@ -74,20 +72,12 @@ class _InternetSupporterWidgetState extends State<InternetSupporterWidget> {
     super.dispose();
   }
 
-  Widget get _platformLoading{
-    if(Platform.isIOS){
-      return const CupertinoActivityIndicator();
-    }else{
-      return const CircularProgressIndicator();
-    }
-  }
-
-  Widget get _loadingView{
-    return widget.loadingWidget ?? _platformLoading;
+  Widget get _loadingWidget{
+    return widget.loadingWidget?? const CircularProgressIndicator();
   }
   @override
   Widget build(BuildContext context) {
-    return _loading? Center(child: _loadingView) :
+    return _loading? Center(child: _loadingWidget) :
     _buildStatusView;
   }
 }
