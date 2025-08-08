@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class RestorableScreen{
@@ -17,12 +16,6 @@ class RouteHelper{
 
   void _init(){
     navigator = Navigator.of(context);
-
-    // navigator.push(route);
-    // navigator.pushNamed(routeName);
-    // navigator.pushNamedAndRemoveUntil(routeName, predicate);
-    // navigator.pushReplacement(route);
-    // navigator.pushReplacementNamed(routeName);
   }
 
   bool get canPop{
@@ -40,6 +33,23 @@ class RouteHelper{
   void removeRoutesBelow(Route<dynamic> anchorRoute){
     navigator.removeRouteBelow(anchorRoute);
   }
+
+  RouteSettings? getSettingForRoute<T>(){
+    return ModalRoute.of<T>(context)?.settings;
+  }
+
+  bool get isCurrent{
+    return ModalRoute.of(context)?.isCurrent?? false;
+  }
+
+  bool get isFirst{
+    return ModalRoute.of(context)?.isFirst?? false;
+  }
+
+  BuildContext? get subtreeContext{
+    return ModalRoute.of(context)?.subtreeContext;
+  }
+
 
   void restorablePush(Widget page){
     RestorableScreen.setPage = page;
