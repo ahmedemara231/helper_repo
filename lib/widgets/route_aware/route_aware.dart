@@ -51,6 +51,7 @@ class _NavigationAwareWidgetState extends State<NavigationAwareWidget>
     widget.onNavigatedTo?.call();
   }
 
+
   @override
   void didPopNext() {
     // Called when we return to this screen from another screen
