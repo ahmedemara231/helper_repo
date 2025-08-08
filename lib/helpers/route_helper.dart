@@ -1,6 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+class RestorableScreen{
+  static late Widget _page;
+  static Widget get getPage => _page;
+  static set setPage(Widget page) => _page = page;
+}
+
 class RouteHelper{
   final BuildContext context;
   RouteHelper(this.context){
@@ -35,15 +41,14 @@ class RouteHelper{
     navigator.removeRouteBelow(anchorRoute);
   }
 
-  // RouteHelper.restorable(BuildContext context,  Widget page){
-  //   _init();
-  // }
-  //
-  // void restorablePush(){
-  //   navigator.restorablePush(routeBuilder);
-  // }
+  void restorablePush(Widget page){
+    RestorableScreen.setPage = page;
+    navigator.restorablePush(routeBuilder);
+  }
 }
 
-// Route routeBuilder(BuildContext context, Object? args) {
-//   return MaterialPageRoute(builder: (context) => );
-// }
+Route routeBuilder(BuildContext context, Object? args) {
+  return MaterialPageRoute(
+      builder: (context) => RestorableScreen.getPage
+  );
+}
