@@ -10,6 +10,8 @@ class RoureAwareTest extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ModalRoute.of<T>(context)?.canPop; // specific route can be poped
+    // Navigator.of(context).canPop(); // can be poped from specific context
     return Scaffold(
       appBar: AppBar(),
       body: NavigationAwareWidget(

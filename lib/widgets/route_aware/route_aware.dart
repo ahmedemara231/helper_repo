@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:helper_repo/widgets/route_aware/route_observer.dart';
 
 // Use Flutter's built-in RouteObserver
-class AppRouteObserver {
-  static final RouteObserver<ModalRoute<void>> _instance = RouteObserver<ModalRoute<dynamic>>();
-  static RouteObserver<ModalRoute<void>> get instance => _instance;
-}
+// material/cupertino/Popup page route extends ModalRoute extends route
+// RouteObserver<R extends Route<dynamic>> extends NavigatorObserver
+
+// class AppRouteObserver {
+//   static final RouteObserver<ModalRoute<void>> _instance = RouteObserver<ModalRoute<dynamic>>();
+//   static RouteObserver<ModalRoute<void>> get instance => _instance;
+// }
 
 class NavigationAwareWidget extends StatefulWidget {
   final Widget child;
@@ -29,19 +33,20 @@ class NavigationAwareWidget extends StatefulWidget {
 class _NavigationAwareWidgetState extends State<NavigationAwareWidget>
     with RouteAware {
 
+  final observer = AppNavigationObserver.instance;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Subscribe to route changes using Flutter's built-in RouteObserver
     final route = ModalRoute.of(context);
     if (route != null) {
-      AppRouteObserver.instance.subscribe(this, route);
+      observer.subscribe(this, route);
     }
   }
 
   @override
   void dispose() {
-    AppRouteObserver.instance.unsubscribe(this);
+    observer.unsubscribe(this);
     super.dispose();
   }
 

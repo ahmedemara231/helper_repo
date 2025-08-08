@@ -7,6 +7,7 @@ import 'package:helper_repo/helpers/notification_service/notification_service.da
 import 'package:helper_repo/widgets/easy_pagination.dart';
 import 'package:helper_repo/widgets/internet_supporter_widget/test.dart';
 import 'package:helper_repo/widgets/route_aware/route_aware.dart';
+import 'package:helper_repo/widgets/route_aware/route_observer.dart';
 import 'package:helper_repo/widgets/route_aware/test.dart';
 import 'package:helper_repo/widgets/socket_widget/test.dart';
 
@@ -42,7 +43,10 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      navigatorObservers: [AppRouteObserver.instance],
+      navigatorObservers: [
+        AppNavigationObserver.instance,
+        // AppRouteObserver.instance
+      ],
       theme: ThemeData(
         // This is the theme of your application.
         //
