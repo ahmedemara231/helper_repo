@@ -44,14 +44,14 @@ extension BasseStatusExt on BaseStatus {
 
 class Helpers{
 
-  static void navigateWithCubit<T extends Cubit>(BuildContext context, {required Widget page}){
-    Go.to(
-        BlocProvider.value(
-          value: context.read<T>(),
-          child: page,
-        )
-    );
-  }
+  // static void navigateWithCubit<T extends Cubit>(BuildContext context, {required Widget page}){
+  //   Go.to(
+  //       BlocProvider.value(
+  //         value: context.read<T>(),
+  //         child: page,
+  //       )
+  //   );
+  // }
   static Future<void> manageBlocListener(BaseStatus baseStatus, {
     String? msg,
     FutureOr<void> Function()? actionWhenSuccess,

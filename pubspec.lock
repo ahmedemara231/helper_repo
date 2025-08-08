@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  archive:
+    dependency: transitive
+    description:
+      name: archive
+      sha256: "2fde1607386ab523f7a36bb3e7edb43bd58e6edaf2ffb29d8a6d578b297fdbbd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.7"
   args:
     dependency: transitive
     description:
@@ -194,7 +202,7 @@ packages:
     source: hosted
     version: "1.19.0"
   connectivity_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: connectivity_plus
       sha256: "051849e2bd7c7b3bc5844ea0d096609ddc3a859890ec3a9ac4a65a2620cc1f99"
@@ -241,6 +249,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  custom_refresh_indicator:
+    dependency: "direct main"
+    description:
+      name: custom_refresh_indicator
+      sha256: c34dd1dfb1f6b9ee2db9c5972586dba5e4445d79f8431f6ab098a6e963ccd39c
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
   dbus:
     dependency: transitive
     description:
@@ -265,6 +281,39 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.2"
+  dio:
+    dependency: "direct main"
+    description:
+      name: dio
+      sha256: "253a18bbd4851fecba42f7343a1df3a9a4c1d31a2c1b37e221086b4fa8c8dbc9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.8.0+1"
+  dio_web_adapter:
+    dependency: transitive
+    description:
+      name: dio_web_adapter
+      sha256: "7586e476d70caecaf1686d21eee7247ea43ef5c345eab9e0cc3583ff13378d78"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
+  easy_loading_button:
+    dependency: "direct main"
+    description:
+      name: easy_loading_button
+      sha256: "6a8c339233e8cab22c0d4ab12a0194e622a98126e35e4bb797505055a8d29bd6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0"
+  easy_pagination:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "8751a9280506d7702c0c3a7d2cdba830c2e840f8"
+      url: "https://github.com/ahmedemara231/pagination_helper"
+    source: git
+    version: "0.0.3"
   encrypt:
     dependency: transitive
     description:
@@ -480,6 +529,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  fluttertoast:
+    dependency: "direct main"
+    description:
+      name: fluttertoast
+      sha256: "25e51620424d92d3db3832464774a6143b5053f15e382d8ffbfd40b6e795dcf1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.2.12"
   gtk:
     dependency: transitive
     description:
@@ -489,7 +546,7 @@ packages:
     source: hosted
     version: "2.1.0"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       sha256: "2c11f3f94c687ee9bad77c171151672986360b2b001d109814ee7140b2cf261b"
@@ -584,6 +641,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.1.1"
+  lottie:
+    dependency: "direct main"
+    description:
+      name: lottie
+      sha256: c5fa04a80a620066c15cf19cc44773e19e9b38e989ff23ea32e5903ef1015950
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.1"
   matcher:
     dependency: transitive
     description:
@@ -792,6 +857,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.9.1"
+  posix:
+    dependency: transitive
+    description:
+      name: posix
+      sha256: "6323a5b0fa688b6a010df4905a56b00181479e6d10534cecfecede2aa55add61"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.3"
   provider:
     dependency: transitive
     description:
