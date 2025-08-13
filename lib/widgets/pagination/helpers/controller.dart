@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:helper_repo/widgets/pagination/helpers/scroll_controller.dart';
-import 'dart:math' as math;
-import 'add_frame.dart';
+part of '../pagify.dart';
 
-class EasyPaginationController<E> {
-  final ValueNotifier<List<E>> items = ValueNotifier<List<E>>([]);
-  final ValueNotifier<bool> needToRefresh = ValueNotifier<bool>(false);
+class PagifyController<E> {
+  final ValueNotifier<List<E>> _items = ValueNotifier<List<E>>([]);
+
+  final ValueNotifier<bool> _needToRefresh = ValueNotifier<bool>(false);
+
 
   RetainableScrollController? _scrollController;
-  void initScrollController(RetainableScrollController controller){
+  void _initScrollController(RetainableScrollController controller){
     _scrollController ??= controller;
   }
 
@@ -34,117 +33,116 @@ class EasyPaginationController<E> {
     ));
   }
 
-  void _notify(){
-    final List<E> list = List.from(items.value);
-    items.value = list;
-    // items.notifyListeners();
-  }
+  // void _notify(){
+  //   // final List<E> list = List.from(_items.value);
+  //   // _items.value = list;
+  //   // items.notifyListeners();
+  //
+  // }
 
-  void updateItems({
+  void _makeActionOnDataChanging() => AsyncCallStatusInterceptor.instance.updateAllStatues(PagifyAsyncCallStatus.success);
+
+  void _updateItems({
     required List<E> newItems,
     bool isReverse = false
   }) {
     switch(isReverse){
       case true:
-        items.value.insertAll(0, newItems);
+        _items.value.insertAll(0, newItems);
         break;
       case false:
-        items.value.addAll(newItems);
+        _items.value.addAll(newItems);
         break;
     }
-    _notify();
+    // _notify();
   }
 
   E? getRandomItem() {
-    if (items.value.isEmpty) return null;
+    if (_items.value.isEmpty) return null;
     final random = math.Random();
-    return items.value[random.nextInt(items.value.length)];
+    return _items.value[random.nextInt(_items.value.length)];
   }
 
   List<E> filter(bool Function(E item) condition) {
-    return items.value.where(condition).toList();
+    return _items.value.where(condition).toList();
   }
 
   void filterAndUpdate(bool Function(E item) condition) {
-    items.value = List.from(filter(condition));
-    _notify();
+    _items.value = List.from(filter(condition));
+    _makeActionOnDataChanging();
   }
 
 
   void sort(int Function(E a, E b) compare) {
-    items.value.sort(compare);
-    _notify();
+    _items.value.sort(compare);
+    _makeActionOnDataChanging();
   }
 
   void _executeWholeRefresh(){
-    needToRefresh.value = !needToRefresh.value;
+    _needToRefresh.value = !_needToRefresh.value;
   }
 
-  void _checkAndNotify(){
-    if(items.value.length == 1){
-      _executeWholeRefresh();
-    }else{
-      _notify();
-    }
-  }
+  // void _checkAndNotify(bool Function() condition){
+  //   if(condition.call()){
+  //     _executeWholeRefresh();
+  //   }else{
+  //     _notify();
+  //   }
+  // }
 
   void addItem(E item) {
-    items.value.add(item);
-    _checkAndNotify();
+    _items.value.add(item);
+    _makeActionOnDataChanging();
+    // _checkAndNotify(() => _items.value.length == 1);
   }
 
   void addItemAt(int index, E item) {
-    items.value.insert(index, item);
-    _checkAndNotify();
+    _items.value.insert(index, item);
+    _makeActionOnDataChanging();
+    // _checkAndNotify(() => _items.value.length == 1);
   }
 
   void addAtBeginning(E item) {
-    items.value.insert(0, item);
-    _checkAndNotify();
+    _items.value.insert(0, item);
+    _makeActionOnDataChanging();
+    // _checkAndNotify(() => _items.value.length == 1);
   }
 
   E? accessElement(int index) {
-    return items.value.elementAtOrNull(index);
+    return _items.value.elementAtOrNull(index);
   }
 
   void replaceWith(int oldItemIndex, E item) {
-    items.value[oldItemIndex] = item;
-    _notify();
-  }
-
-  void refresh(){
-    _notify();
-  }
-
-  void _checkAndNotifyAfterRemoving(){
-    if(items.value.isEmpty){
-      _executeWholeRefresh();
-    }else{
-      _notify();
-    }
+    _items.value[oldItemIndex] = item;
+    _makeActionOnDataChanging();
+    // _notify();
   }
 
   void removeItem(E item) {
-    items.value.remove(item);
-    _checkAndNotifyAfterRemoving();
+    _items.value.remove(item);
+    _makeActionOnDataChanging();
+    // _checkAndNotify(() => _items.value.isEmpty);
   }
 
   void removeAt(int index){
-    items.value.removeAt(index);
-    _checkAndNotifyAfterRemoving();
+    _items.value.removeAt(index);
+    _makeActionOnDataChanging();
+    // _checkAndNotify(() => _items.value.isEmpty);
   }
 
   void removeWhere(bool Function(E item) condition){
-    items.value.removeWhere(condition);
-    _checkAndNotifyAfterRemoving();
+    _items.value.removeWhere(condition);
+    _makeActionOnDataChanging();
+    // _checkAndNotify(() => _items.value.isEmpty);
   }
 
   void clear() {
-    items.value.clear();
-    _notify();
+    _items.value.clear();
+    _makeActionOnDataChanging();
+    // _notify();
   }
 
   void dispose() {
-    items.dispose();
+    _items.dispose();
   }
 }

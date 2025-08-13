@@ -1,11 +1,11 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:helper_repo/widgets/padding.dart';
-import 'package:helper_repo/widgets/pagination/helpers/controller.dart';
 import 'package:helper_repo/widgets/pagination/helpers/data_and_pagination_data.dart';
 import 'package:helper_repo/widgets/pagination/helpers/errors.dart';
-import 'package:helper_repo/widgets/pagination/pagination_with_reverse_and_status_stream.dart';
+import 'package:helper_repo/widgets/pagination/pagify.dart';
 import 'package:helper_repo/widgets/text.dart';
 
 
@@ -19,31 +19,29 @@ class ExampleModel{
   });
 }
 
-class EasyPaginationTest extends StatefulWidget {
-  const EasyPaginationTest({super.key});
+class PagifyTest extends StatefulWidget {
+  const PagifyTest({super.key});
 
   @override
-  State<EasyPaginationTest> createState() => _EasyPaginationTestState();
+  State<PagifyTest> createState() => _PagifyTestState();
 }
 
-class _EasyPaginationTestState extends State<EasyPaginationTest> {
+class _PagifyTestState extends State<PagifyTest> {
 
   Future<ExampleModel> _fetchData(int currentPage) async {
-    await Future.delayed(const Duration(seconds: 2)); // simulate api call with current page
+    await Future.delayed(const Duration(seconds: 1)); // simulate api call with current page
 
     if(currentPage == 1){
       // throw DioException(requestOptions: RequestOptions());
-      // throw PaginationNetworkError('msg');
     }
-
     final items = List.generate(25, (index) => 'Item $index');
-    return ExampleModel(items: items, totalPages: 3);
+    return ExampleModel(items: items, totalPages: 4);
   }
 
-  late EasyPaginationController<String> _easyPaginationController;
+  late PagifyController<String> _easyPaginationController;
   @override
   void initState() {
-    _easyPaginationController = EasyPaginationController<String>();
+    _easyPaginationController = PagifyController<String>();
     super.initState();
   }
 
@@ -57,12 +55,13 @@ class _EasyPaginationTestState extends State<EasyPaginationTest> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text('Example Usage')),
-        body: EasyPagination<ExampleModel, String>.listView(
-            // isReverse: true,
-          loadingBuilder: CupertinoActivityIndicator(),
+        body: Pagify<ExampleModel, String>.listView(
+            isReverse: false,
+            showNoDataAlert: true,
+            onUpdateStatus: (s) => log('message $s'),
             controller: _easyPaginationController,
             asyncCall: (page)async => await _fetchData(page),
-            mapper: (response) => DataListAndPaginationData(
+            mapper: (response) => PagifyData(
                 data: response.items,
                 paginationData: PaginationData(
                   totalPages: response.totalPages,
@@ -70,10 +69,17 @@ class _EasyPaginationTestState extends State<EasyPaginationTest> {
                 )
             ),
             errorMapper: ErrorMapper(
-              errorWhenDio: (e) => e.response?.data['errorMsg'], // if you using Dio
+              errorWhenDio: (e) => 'e.response?.data['']', // if you using Dio
               errorWhenHttp: (e) => e.message, // if you using Http
             ),
-            itemBuilder: (data, index, element) => AppText(element, fontSize: 20,).paddingSymmetric(vertical: 10)
+            itemBuilder: (data, index, element) => Center(
+                child: InkWell(
+                    onTap: (){
+                      log('enter here');
+                      _easyPaginationController.addAtBeginning('otieuytoiuet');
+                    },
+                    child: AppText(element, fontSize: 20,).paddingSymmetric(vertical: 10))
+            )
         )
     );
   }

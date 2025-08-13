@@ -1,10 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 class SmartModalRoute<T> extends ModalRoute<T> {
   final WidgetBuilder builder;
+  final FutureOr<void> Function() onPush;
+  // .. etc
 
   SmartModalRoute({
     required this.builder,
+    required this.onPush,
     RouteSettings? settings,
   }) : super(settings: settings);
 
@@ -25,23 +29,20 @@ class SmartModalRoute<T> extends ModalRoute<T> {
   @override
   void didChangeNext(Route<dynamic>? nextRoute) {
     super.didChangeNext(nextRoute);
-
-    print('🚀 [SmartRoute] didChangeNext() triggered!');
-    print('   → Previous next route: ${_currentNextRoute?.settings.name}');
-    print('   → New next route: ${nextRoute?.settings.name}');
-
     if (nextRoute == null) {
       print('   ✅ This route is now the TOP route (no route above)');
       _onBecameTopRoute();
     } else {
-      print('   📱 Another route was pushed above this one');
-      _onCoveredByRoute(nextRoute);
+      print('📱 Another route was pushed above this one');
     }
-
-    _currentNextRoute = nextRoute;
   }
 
-  Route<dynamic>? _currentNextRoute;
+  @override
+  void didChangePrevious(Route? previousRoute) {
+    // TODO: implement didChangePrevious
+    super.didChangePrevious(previousRoute);
+  }
+
 
   void _onBecameTopRoute() {
     // Professional actions when route becomes visible
@@ -50,11 +51,23 @@ class SmartModalRoute<T> extends ModalRoute<T> {
     print('   🔥 Re-enabling animations...');
   }
 
-  void _onCoveredByRoute(Route<dynamic> coveringRoute) {
-    // Professional actions when route is covered
-    print('   💤 Pausing background processes...');
-    print('   💤 Reducing resource usage...');
-    print('   💤 Covered by: ${coveringRoute.settings.name}');
+  @override
+  void didAdd() {
+    // TODO: implement didAdd
+    super.didAdd();
+  }
+
+  @override
+  bool didPop(T? result) {
+    // TODO: implement didPop
+    return super.didPop(result);
+  }
+
+  @override
+  TickerFuture didPush() {
+    // TODO: implement didPush
+    onPush.call();
+    return super.didPush();
   }
 
   @override
@@ -69,3 +82,24 @@ class SmartModalRoute<T> extends ModalRoute<T> {
     return FadeTransition(opacity: animation, child: child);
   }
 }
+
+// class SmartRouteTest extends StatelessWidget {
+//   const SmartRouteTest({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: TextButton(
+//           onPressed: () => Navigator.push(
+//               context,
+//               SmartModalRoute(
+//                   builder: (context) => ,
+//                onPush: () {},
+//                 // ... etc
+//               )
+//           ),
+//           child: Text('test')
+//       ),
+//     );
+//   }
+// }

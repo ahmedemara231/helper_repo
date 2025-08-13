@@ -2,24 +2,26 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:lottie/lottie.dart';
 import '../text.dart';
 import 'helpers/add_frame.dart';
-import 'helpers/controller.dart';
 import 'helpers/data_and_pagination_data.dart';
 import 'helpers/errors.dart';
 import 'helpers/message_utils.dart';
 import 'helpers/scroll_controller.dart';
 import 'helpers/status_stream.dart';
+part 'helpers/controller.dart';
 
 enum RankingType {gridView, listView}
 
 // Response is full response which includes data list and pagination data
 // Model is specific model is the list
-class EasyPagination<Response, Model> extends StatefulWidget {
-  final FutureOr<void> Function(AsyncCallStatus status)? onUpdateStatus;
+class Pagify<Response, Model> extends StatefulWidget {
+  final FutureOr<void> Function(PagifyAsyncCallStatus status)? onUpdateStatus;
   final bool isReverse;
   final bool showNoDataAlert;
   final RankingType rankingType;
@@ -30,11 +32,11 @@ class EasyPagination<Response, Model> extends StatefulWidget {
   final FutureOr<void> Function(int currentPage, List<Model> data)? onSuccess;
   final FutureOr<void> Function(int currentPage, String errorMessage)? onError;
   final Future<Response> Function(int currentPage) asyncCall;
-  final DataListAndPaginationData<Model> Function(Response response) mapper;
+  final PagifyData<Model> Function(Response response) mapper;
   final Widget Function(List<Model> data, int index, Model element) itemBuilder;
   final Widget? loadingBuilder;
   final Widget Function(String errorMsg)? errorBuilder;
-  final EasyPaginationController<Model> controller;
+  final PagifyController<Model> controller;
   final Axis? scrollDirection;
   final bool? shrinkWrap;
   final double? mainAxisSpacing;
@@ -44,7 +46,7 @@ class EasyPagination<Response, Model> extends StatefulWidget {
   final String? noConnectionText;
   final String? emptyListText;
 
-  EasyPagination.gridView({super.key,
+  Pagify.gridView({super.key,
     required this.controller,
     required this.asyncCall,
     required this.mapper,
@@ -70,7 +72,7 @@ class EasyPagination<Response, Model> extends StatefulWidget {
   }) : rankingType = RankingType.gridView, shrinkWrap = true,
         assert(errorMapper.errorWhenHttp != null || errorMapper.errorWhenDio != null);
 
-  EasyPagination.listView({super.key,
+  Pagify.listView({super.key,
     required this.controller,
     required this.asyncCall,
     required this.mapper,
@@ -99,22 +101,24 @@ class EasyPagination<Response, Model> extends StatefulWidget {
 
 
   @override
-  State<EasyPagination<Response, Model>> createState() => _EasyPaginationState<Response, Model>();
+  State<Pagify<Response, Model>> createState() => _PagifyState<Response, Model>();
 }
 
-class _EasyPaginationState<Response, Model> extends State<EasyPagination<Response, Model>> {
+class _PagifyState<Response, Model> extends State<Pagify<Response, Model>> {
   late RetainableScrollController _scrollController;
-  AsyncCallStatusInterceptor status = AsyncCallStatusInterceptor(AsyncCallStatus.initial);
-  int currentPage = 1;
-  late int totalPages;
+  AsyncCallStatusInterceptor asyncCallState = AsyncCallStatusInterceptor.instance;
+  int _currentPage = 1;
+  late int _totalPages;
+  StreamSubscription<PagifyAsyncCallStatus>? _statusSubscription;
 
   @override
   void initState() {
     super.initState();
     _scrollController = RetainableScrollController();
     _scrollController.addListener(() => _onScroll());
+    _listenToNetworkChanges();
     if(widget.onUpdateStatus != null){
-      status.listenStatusChanges.listen((event) => widget.onUpdateStatus!(event));
+      _statusSubscription = asyncCallState.listenStatusChanges.listen((event) => widget.onUpdateStatus!(event));
     }
     _fetchDataFirstTimeOrRefresh();
   }
@@ -122,11 +126,13 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
   @override
   void dispose() {
     _scrollController.dispose();
-    status.dispose();
+    asyncCallState.dispose();
+    _connectivitySubscription.cancel();
+    _statusSubscription?.cancel();
     super.dispose();
   }
 
-  String errorMsg = '';
+  String _errorMsg = '';
   void _logError(Exception e){
     if(e is DioException){
       String prettyJson = const JsonEncoder.withIndent('  ').convert(e.response?.data);
@@ -140,20 +146,21 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
   FutureOr<void> _errorHandler(Exception e){
     dev.log('enter error handler');
     _logError(e);
-    widget.onError?.call(currentPage, errorMsg);
-    setState(() => status.updateStatus(AsyncCallStatus.error));
+    widget.onError?.call(_currentPage, _errorMsg);
 
     if(e is PaginationNetworkError){
-      setState(() => status.updateStatus(AsyncCallStatus.networkError));
-
-    }else if(e is DioException){
-      errorMsg = widget.errorMapper.errorWhenDio?.call(e)?? '';
-
-    }else if(e is HttpException){
-      errorMsg = widget.errorMapper.errorWhenHttp?.call(e)?? '';
-
+      asyncCallState.updateAllStatues(PagifyAsyncCallStatus.networkError);
     }else{
-      errorMsg = 'There is error occur $e';
+      asyncCallState.updateAllStatues(PagifyAsyncCallStatus.error);
+      if(e is DioException){
+        _errorMsg = widget.errorMapper.errorWhenDio?.call(e)?? '';
+
+      }else if(e is HttpException){
+        _errorMsg = widget.errorMapper.errorWhenHttp?.call(e)?? '';
+
+      }else{
+        _errorMsg = 'There is error occur $e';
+      }
     }
   }
 
@@ -185,15 +192,15 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
       case true:
         if (_scrollController.position.pixels ==
             _scrollController.position.minScrollExtent &&
-            !status.currentState.isLoading &&
-            currentPage <= totalPages){
+            !asyncCallState.currentState.isLoading &&
+            _currentPage <= _totalPages){
           await _fetchDataWhenScrollUp();
         }
       default:
         if (_scrollController.position.pixels ==
             _scrollController.position.maxScrollExtent &&
-            !status.currentState.isLoading &&
-            currentPage <= totalPages) {
+            !asyncCallState.currentState.isLoading &&
+            _currentPage <= _totalPages) {
           await _fetchDataWhenScrollDown();
         }
     }
@@ -201,25 +208,26 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
 
   Future<void> _fetchDataWhenScrollUp() async{
     await _fetchDataWhileScrolling((items) =>
-        widget.controller.updateItems(newItems: items, isReverse: true)
+        widget.controller._updateItems(newItems: items, isReverse: true)
     );
   }
 
   Future<void> _fetchDataWhenScrollDown() async{
     await _fetchDataWhileScrolling((items) =>
-        widget.controller.updateItems(newItems: items, isReverse: false)
+        widget.controller._updateItems(newItems: items, isReverse: false)
     );
   }
 
+  List<Model> get _itemsList => widget.controller._items.value;
   Future<void> _fetchDataWhileScrolling(void Function(List<Model> items) onUpdate)async{
     await _fetchDataAndMapping(
         whenEnd: (mapperResult) async{
           onUpdate(mapperResult.data);
-          await widget.onSuccess?.call(currentPage, widget.controller.items.value);
+          await widget.onSuccess?.call(_currentPage, _itemsList);
           _scrollController.restoreOffset(
               isReverse: widget.isReverse,
               subList: mapperResult.data,
-              totalCurrentItems: widget.controller.items.value.length
+              totalCurrentItems: _itemsList.length
           );
         }
     );
@@ -228,56 +236,91 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
 
   Future<void> _fetchDataAndMapping({
     FutureOr<void> Function()? whenStart,
-    FutureOr<void> Function(DataListAndPaginationData<Model> mapperResult)? whenEnd,
+    FutureOr<void> Function(PagifyData<Model> mapperResult)? whenEnd,
   })async{
     await whenStart?.call();
-    setState(() => status.updateStatus(AsyncCallStatus.loading));
+    asyncCallState.updateAllStatues(PagifyAsyncCallStatus.loading);
     await widget.onLoading?.call();
     _scrollController.retainOffset();
     final mapperResult = await _manageMapper();
-    if(currentPage <= mapperResult.paginationData.totalPages.toInt()){
-      setState(() {
-        currentPage++;
-        status.updateStatus(AsyncCallStatus.success);
-      });
+    if(_currentPage <= mapperResult.paginationData.totalPages.toInt()){
+      setState(() => _currentPage++);
+      asyncCallState.updateAllStatues(PagifyAsyncCallStatus.success);
     }
     await whenEnd?.call(mapperResult);
   }
 
-  Future<DataListAndPaginationData<Model>> _manageMapper()async{
+  Future<PagifyData<Model>> _manageMapper()async{
     final result = await _callApi(widget.asyncCall);
-    final DataListAndPaginationData<Model> mapperResult = widget.mapper(result);
+    final PagifyData<Model> mapperResult = widget.mapper(result);
 
     // should be called every time because the total pages may be changed
     _manageTotalPagesNumber(mapperResult.paginationData.totalPages);
     return mapperResult;
   }
 
-  void _manageTotalPagesNumber(int totalPagesNumber) => totalPages = totalPagesNumber;
+  void _manageTotalPagesNumber(int totalPagesNumber) => _totalPages = totalPagesNumber;
 
-  Future<Response> _callApi(Future<Response> Function(int currentPage) asyncCall)async{
-    final connectivityResult = await Connectivity().checkConnectivity();
+  late final Connectivity _connectivity = Connectivity();
+
+  Future<void> _checkAndMake({
+    required List<ConnectivityResult> connectivityResult,
+    required FutureOr<void> Function() onConnected,
+    required FutureOr<void> Function() onDisconnected,
+  })async{
     if(connectivityResult.contains(ConnectivityResult.none)){
-      throw PaginationNetworkError(widget.noConnectionText?? 'Check your internet connection');
+      await onDisconnected.call();
 
     }else{
-      final Response result = await asyncCall(currentPage);
-      return result;
+      await onConnected.call();
     }
+  }
+
+  Future<Response> _callApi(Future<Response> Function(int currentPage) asyncCall)async{
+    late final Response waitingResult;
+    final connectivityResult = await _connectivity.checkConnectivity();
+    await _checkAndMake(
+        connectivityResult: connectivityResult,
+        onConnected: () async{
+          final Response result = await asyncCall(_currentPage);
+          waitingResult = result;
+        },
+        onDisconnected: () => throw PaginationNetworkError(widget.noConnectionText?? 'Check your internet connection')
+    );
+
+    return waitingResult;
+  }
+
+  bool isInitialized = false;
+  late final StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  void _listenToNetworkChanges(){
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((networkStatus){
+      if(isInitialized){
+        _checkAndMake(
+            connectivityResult: networkStatus,
+            onConnected: () => setState(() => asyncCallState.setLastStatusAsCurrent(
+                ifLastIsLoading: () async => await _fetchDataFirstTimeOrRefresh()
+            )),
+            onDisconnected: () => asyncCallState.updateAllStatues(PagifyAsyncCallStatus.networkError)
+        );
+      }
+    });
+
+    Future.delayed(const Duration(seconds: 1), () => isInitialized = true);
   }
 
   Future<void> _fetchDataFirstTimeOrRefresh() async {
     try {
       await _fetchDataAndMapping(
           whenStart: () {
-            if(currentPage > 1 && widget.controller.items.value.isNotEmpty){
+            if(_currentPage > 1 && _itemsIsNotEmpty){
               _resetDataWhenRefresh();
             }
           },
           whenEnd: (mapperResult) async{
-            widget.controller.updateItems(newItems: mapperResult.data);
-            widget.controller.initScrollController(_scrollController);
-            await widget.onSuccess?.call(currentPage, widget.controller.items.value);
+            widget.controller._updateItems(newItems: mapperResult.data);
+            widget.controller._initScrollController(_scrollController);
+            await widget.onSuccess?.call(_currentPage, _itemsList);
             if(widget.isReverse){
               Frame.addBefore(() => _scrollDownWhileGetDataFirstTimeWhenReverse());
             }
@@ -289,14 +332,16 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
   }
 
   void _scrollDownWhileGetDataFirstTimeWhenReverse(){
-    _scrollController.jumpTo(
-      _scrollController.position.maxScrollExtent,
-    );
+    if(_itemsIsNotEmpty){
+      _scrollController.jumpTo(
+        _scrollController.position.maxScrollExtent,
+      );
+    }
   }
 
   void _resetDataWhenRefresh() {
-    currentPage = 1;
-    widget.controller.items.value.clear();
+    _currentPage = 1;
+    _itemsList.clear();
   }
 
   Widget _listRanking(){
@@ -306,12 +351,12 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
     return _listView();
   }
 
-  bool get _hasMoreData => currentPage <= totalPages;
-  bool get _shouldShowLoading => _hasMoreData && status.currentState.isLoading;
+  bool get _hasMoreData => _currentPage <= _totalPages;
+  bool get _shouldShowLoading => _hasMoreData && asyncCallState.currentState.isLoading;
   bool get _shouldShowNoData => widget.showNoDataAlert && !_hasMoreData;
   final Widget _noMoreDataText = const AppText('No more data', textAlign: TextAlign.center, color: Colors.grey);
 
-  Widget _buildGridExtraItemSuchNoMoreDataOrLoading({Widget? defaultWidget}){
+  Widget _buildExtraItemSuchNoMoreDataOrLoading({Widget? defaultWidget}){
     if(_shouldShowNoData){
       return _noMoreDataText;
 
@@ -327,13 +372,13 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
     if (index < value.length) {
       return widget.itemBuilder(value, index, value[index]);
     } else {
-      return _buildGridExtraItemSuchNoMoreDataOrLoading();
+      return _buildExtraItemSuchNoMoreDataOrLoading();
     }
   }
 
   Widget _buildItemBuilderWhenReverse({required int index, required List<Model> value}) {
     if (index == 0 && (_shouldShowLoading || _shouldShowNoData)) {
-      return _buildGridExtraItemSuchNoMoreDataOrLoading();
+      return _buildExtraItemSuchNoMoreDataOrLoading();
     }
 
     int dataIndex = (_shouldShowLoading || _shouldShowNoData) ? index - 1 : index;
@@ -349,58 +394,52 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
   }
 
   Widget _listView() {
-    return ValueListenableBuilder(
-      valueListenable: widget.controller.items,
-      builder: (context, value, child) => Align(
-        alignment: widget.isReverse? Alignment.bottomCenter : Alignment.topCenter,
-        child: ListView.builder(
-            scrollDirection: widget.scrollDirection?? Axis.vertical,
-            shrinkWrap: widget.shrinkWrap?? false,
-            controller: _scrollController,
-            itemCount: _buildItemCount(value),
-            itemBuilder: (context, index) => widget.isReverse?
-            _buildItemBuilderWhenReverse(index: index, value: value) :
-            _buildItemBuilder(index: index, value: value)
-        ),
+    return Align(
+      alignment: widget.isReverse? Alignment.bottomCenter : Alignment.topCenter,
+      child: ListView.builder(
+          scrollDirection: widget.scrollDirection?? Axis.vertical,
+          shrinkWrap: widget.shrinkWrap?? false,
+          controller: _scrollController,
+          itemCount: _buildItemCount(_itemsList),
+          itemBuilder: (context, index) => widget.isReverse?
+          _buildItemBuilderWhenReverse(index: index, value: _itemsList) :
+          _buildItemBuilder(index: index, value: _itemsList)
       ),
     );
   }
 
   Widget _gridView() {
-    return ValueListenableBuilder(
-      valueListenable: widget.controller.items,
-      builder: (context, value, child) => SingleChildScrollView(
-        controller: _scrollController,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: widget.isReverse?
-          MainAxisAlignment.end : MainAxisAlignment.start,
-          children: [
-            if(widget.isReverse)
-              _buildGridExtraItemSuchNoMoreDataOrLoading(),
-            GridView.count(
-              shrinkWrap: widget.shrinkWrap!,
-              crossAxisCount: widget.crossAxisCount?? 2,
-              mainAxisSpacing: widget.mainAxisSpacing?? 0.0,
-              crossAxisSpacing: widget.crossAxisSpacing?? 0.0,
-              childAspectRatio: widget.childAspectRatio?? 1,
-              scrollDirection: widget.scrollDirection?? Axis.vertical,
-              physics: const NeverScrollableScrollPhysics(),
-              children: List.generate(
-                value.length,
-                    (index) => widget.itemBuilder(value, index, value[index]),
-              ),
+    return SingleChildScrollView(
+      controller: _scrollController,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: widget.isReverse?
+        MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          if(widget.isReverse)
+            _buildExtraItemSuchNoMoreDataOrLoading(),
+          GridView.count(
+            shrinkWrap: widget.shrinkWrap!,
+            crossAxisCount: widget.crossAxisCount?? 2,
+            mainAxisSpacing: widget.mainAxisSpacing?? 0.0,
+            crossAxisSpacing: widget.crossAxisSpacing?? 0.0,
+            childAspectRatio: widget.childAspectRatio?? 1,
+            scrollDirection: widget.scrollDirection?? Axis.vertical,
+            physics: const NeverScrollableScrollPhysics(),
+            children: List.generate(
+              _itemsList.length,
+                  (index) => widget.itemBuilder(_itemsList, index, _itemsList[index]),
             ),
-            if(!widget.isReverse)
-              _buildGridExtraItemSuchNoMoreDataOrLoading(),
-          ],
-        ),
+          ),
+          if(!widget.isReverse)
+            _buildExtraItemSuchNoMoreDataOrLoading(),
+        ],
       ),
     );
   }
 
   Widget get _buildLoadingView{
-    if(widget.controller.items.value.isEmpty){
+    if(_itemsIsEmpty){
       return _loadingWidget;
     }else{
       return _listRanking();
@@ -420,19 +459,21 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
     }
   }
 
+  bool get _itemsIsNotEmpty => _itemsList.isNotEmpty;
+  bool get _itemsIsEmpty => _itemsList.isEmpty;
+
   Widget get _buildErrorWidget{
-    if(widget.controller.items.value.isNotEmpty){
-      if(status.currentState.isNetworkError){
+    if(_itemsIsNotEmpty){
+      if(asyncCallState.currentState.isNetworkError){
         MessageUtils. showSimpleToast(msg: widget.noConnectionText?? 'Check your internet connection', color: Colors.red);
       }else{
-        MessageUtils.showSimpleToast(msg: errorMsg, color: Colors.red);
+        MessageUtils.showSimpleToast(msg: _errorMsg, color: Colors.red);
       }
       return _listRanking();
     }else{
-      if(status.currentState.isNetworkError){
+      if(asyncCallState.currentState.isNetworkError){
         return Column(
           children: [
-            // Lottie.asset(Assets.lottieNoInternet),
             const SizedBox(height: 10),
             Text(
                 widget.noConnectionText?? 'Check your internet connection',
@@ -445,28 +486,26 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
         case null:
           return Column(
             children: [
-              // Lottie.asset(Assets.lottieApiError),
               const SizedBox(height: 10),
               Text(
-                  errorMsg,
+                  _errorMsg,
                   style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w500)
               )
             ],
           );
+
         default:
-          return widget.errorBuilder!(errorMsg);
+          return widget.errorBuilder!(_errorMsg);
       }
     }
   }
 
-
   Widget get _buildSuccessWidget{
-    if(widget.controller.items.value.isNotEmpty){
+    if(_itemsIsNotEmpty){
       return _listRanking();
     }else{
       return Column(
         children: [
-          // Lottie.asset(Assets.lottieNoData),
           const SizedBox(height: 10),
           Text(widget.emptyListText?? 'There is no data right now!')
         ],
@@ -488,12 +527,48 @@ class _EasyPaginationState<Response, Model> extends State<EasyPagination<Respons
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: widget.controller.needToRefresh,
-      builder: (context, value, child) =>
-      status.currentState.isError || status.currentState.isNetworkError?
-      _buildErrorWidget : status.currentState.isLoading?
-      _buildLoadingView : _buildSuccessWidget,
+    return StreamBuilder<PagifyAsyncCallStatus>(
+        stream: asyncCallState.listenStatusChanges,
+        builder: (context, snapshot) => SnapshotHandler(
+          snapshot: snapshot,
+          loadingWidget: _loadingWidget,
+          activeStateCallBack: (snapshot) => snapshot.hasData?
+          snapshot.data!.isError || snapshot.data!.isNetworkError?
+          _buildErrorWidget : asyncCallState.currentState.isLoading?
+          _buildLoadingView : _buildSuccessWidget : AppText('the stream throws an exception'),
+        )
     );
+  }
+}
+
+class SnapshotHandler extends StatelessWidget {
+  final AsyncSnapshot<PagifyAsyncCallStatus> snapshot;
+  final Widget loadingWidget;
+  final Widget Function(AsyncSnapshot<PagifyAsyncCallStatus> snapshot) activeStateCallBack;
+
+
+  const SnapshotHandler({super.key,
+    required this.snapshot,
+    required this.loadingWidget,
+    required this.activeStateCallBack
+  });
+
+  Widget get _checkStreamStatesAndBuildView{
+    switch(snapshot.connectionState){
+      case ConnectionState.waiting:
+        return loadingWidget;
+
+      case ConnectionState.none:
+        return AppText('no stream connection!');
+
+
+      default:
+        return activeStateCallBack.call(snapshot);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _checkStreamStatesAndBuildView;
   }
 }

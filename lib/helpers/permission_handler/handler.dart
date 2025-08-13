@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'model.dart';
 
@@ -7,8 +8,18 @@ class PermissionHandler{
 
   Future<void> checkPermission({
     required PermissionModel permissionManagerModel,
+    FutureOr<void> Function (bool isEnabled)? onLocationServiceStatus,
     bool openSetting = false
   }) async {
+    bool isLocationServiceEnabled = false;
+    if(await Geolocator.isLocationServiceEnabled()){
+      isLocationServiceEnabled = true;
+      onLocationServiceStatus?.call(isLocationServiceEnabled);
+    }else{
+      onLocationServiceStatus?.call(isLocationServiceEnabled);
+      return;
+    }
+
     for(Permission permission in permissionManagerModel.permissions){
       await _checkOnePermission(
           selectedPermission: permission,

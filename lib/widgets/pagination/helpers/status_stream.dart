@@ -1,6 +1,6 @@
 import 'dart:async';
 
-enum AsyncCallStatus {
+enum PagifyAsyncCallStatus {
   initial,
   loading,
   success,
@@ -8,26 +8,61 @@ enum AsyncCallStatus {
   networkError,
 }
 
-extension AsyncCallStatusExtension on AsyncCallStatus {
-  bool get isLoading => this == AsyncCallStatus.loading;
-  bool get isError => this == AsyncCallStatus.error;
-  bool get isNetworkError => this == AsyncCallStatus.networkError;
-  bool get isSuccess => this == AsyncCallStatus.success;
+extension AsyncCallStatusExtension on PagifyAsyncCallStatus {
+  bool get isLoading => this == PagifyAsyncCallStatus.loading;
+  bool get isError => this == PagifyAsyncCallStatus.error;
+  bool get isNetworkError => this == PagifyAsyncCallStatus.networkError;
+  bool get isSuccess => this == PagifyAsyncCallStatus.success;
 }
 
 class AsyncCallStatusInterceptor{
-  AsyncCallStatus currentState;
 
-  AsyncCallStatusInterceptor(this.currentState);
+  static AsyncCallStatusInterceptor? _instance;
+  static AsyncCallStatusInterceptor get instance => _instance ??= AsyncCallStatusInterceptor();
 
-  final StreamController<AsyncCallStatus> _controller = StreamController<AsyncCallStatus>();
-  void updateStatus(AsyncCallStatus newStatus){
+  late PagifyAsyncCallStatus currentState;
+  late PagifyAsyncCallStatus lastStateBeforeNetworkError;
+  late final StreamController<PagifyAsyncCallStatus> _controller;
+
+  void _init(){
+    currentState = PagifyAsyncCallStatus.initial;
+    lastStateBeforeNetworkError = PagifyAsyncCallStatus.initial;
+    _controller = StreamController<PagifyAsyncCallStatus>.broadcast();
+  }
+
+  AsyncCallStatusInterceptor(){
+    _init();
+  }
+
+
+  void updateAllStatues(PagifyAsyncCallStatus newStatus){
+    updateStatus(newStatus);
+    setLastStatus(newStatus);
+  }
+
+  void updateStatus(PagifyAsyncCallStatus newStatus){
     currentState = newStatus;
     _controller.add(newStatus);
   }
 
-  Stream<AsyncCallStatus> get stream => _controller.stream;
-  Stream<AsyncCallStatus> get listenStatusChanges{
+  void setLastStatus(PagifyAsyncCallStatus newStatus){
+    if(newStatus != PagifyAsyncCallStatus.networkError){
+      lastStateBeforeNetworkError = newStatus;
+    }
+  }
+
+  void setLastStatusAsCurrent({
+    required Future<void> Function() ifLastIsLoading,
+  }) {
+    if(lastStateBeforeNetworkError == PagifyAsyncCallStatus.loading){
+      ifLastIsLoading.call();
+    }else{
+      updateStatus(lastStateBeforeNetworkError);
+    }
+  }
+
+  Stream<PagifyAsyncCallStatus> get stream => _controller.stream;
+  Stream<PagifyAsyncCallStatus> get listenStatusChanges{
     return stream;
   }
 

@@ -10,6 +10,7 @@ class RoureAwareTest extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     // ModalRoute.of<T>(context)?.canPop; // specific route can be poped
     // Navigator.of(context).canPop(); // can be poped from specific context
     return Scaffold(
@@ -22,7 +23,7 @@ class RoureAwareTest extends StatelessWidget {
           child: InkWell(
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(
-                    builder: (context) => EasyPaginationTest()
+                    builder: (context) => PagifyTest()
                 )
             ),
               child: Center(child: AppText('text', fontSize: 100,)))
