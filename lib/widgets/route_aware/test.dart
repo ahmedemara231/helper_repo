@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:helper_repo/widgets/easy_pagination.dart';
 import 'package:helper_repo/widgets/route_aware/route_aware.dart';
-import 'package:helper_repo/widgets/text.dart';
+import 'package:helper_repo/widgets/base_widgets/text.dart';
 
 class RoureAwareTest extends StatelessWidget {
   const RoureAwareTest({super.key});

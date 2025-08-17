@@ -8,18 +8,8 @@ class PermissionHandler{
 
   Future<void> checkPermission({
     required PermissionModel permissionManagerModel,
-    FutureOr<void> Function (bool isEnabled)? onLocationServiceStatus,
     bool openSetting = false
   }) async {
-    bool isLocationServiceEnabled = false;
-    if(await Geolocator.isLocationServiceEnabled()){
-      isLocationServiceEnabled = true;
-      onLocationServiceStatus?.call(isLocationServiceEnabled);
-    }else{
-      onLocationServiceStatus?.call(isLocationServiceEnabled);
-      return;
-    }
-
     for(Permission permission in permissionManagerModel.permissions){
       await _checkOnePermission(
           selectedPermission: permission,
@@ -41,6 +31,7 @@ class PermissionHandler{
     bool openSetting = false
   })async{
     permission = selectedPermission;
+
     await _askForPermission(
       onPermissionGranted: onGranted,
       onPermissionDenied: onDenied,
@@ -57,8 +48,8 @@ class PermissionHandler{
     FutureOr<void> Function(Permission permission)? onPermissionLimited,
     bool openSetting = false
   })async {
-    bool isGranted = await permission.status.isGranted;
-    if(!isGranted) {
+    PermissionStatus permissionStatus = await permission.status;
+    if(permissionStatus != PermissionStatus.granted) {
       PermissionStatus status = await permission.request();
       switch(status) {
         case PermissionStatus.granted:

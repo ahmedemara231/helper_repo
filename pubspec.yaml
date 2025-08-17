@@ -44,9 +44,9 @@ dependencies:
   firebase_messaging: ^15.1.6
   shared_preferences: ^2.5.3
   timezone: ^0.9.4
-  zego_uikit_prebuilt_call: ^4.17.3
-  zego_uikit_signaling_plugin: ^2.8.13
-  zego_uikit: ^2.28.19
+#  zego_uikit_prebuilt_call: ^4.17.3
+#  zego_uikit_signaling_plugin: ^2.8.13
+#  zego_uikit: ^2.28.19
   app_links: ^6.4.0
   workmanager: ^0.7.0
   lottie: ^3.3.1
@@ -55,6 +55,7 @@ dependencies:
   custom_refresh_indicator: ^4.0.1
   dio: ^5.8.0+1
   http: ^1.4.0
+  equatable:
 #  pagify:
 #    git: https://github.com/ahmedemara231/pagination_helper
 

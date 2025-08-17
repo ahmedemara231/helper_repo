@@ -1,6 +1,6 @@
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
-import 'package:helper_repo/widgets/text.dart';
+import 'package:helper_repo/widgets/base_widgets/text.dart';
 
 class LoadingBtn extends StatelessWidget {
   final Future<void> Function(BuildContext context) call;

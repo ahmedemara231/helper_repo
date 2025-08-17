@@ -6,7 +6,7 @@ import 'package:helper_repo/widgets/internet_supporter_widget/internet_supporter
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../route_aware/test.dart';
-import '../text.dart';
+import '../base_widgets/text.dart';
 
 class InternetSupporterTest extends StatelessWidget {
   const InternetSupporterTest({super.key});
