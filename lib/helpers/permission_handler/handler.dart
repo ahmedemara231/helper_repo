@@ -54,18 +54,22 @@ class PermissionHandler{
       switch(status) {
         case PermissionStatus.granted:
           await onPermissionGranted?.call(permission);
+          break;
 
         case PermissionStatus.denied:
           await onPermissionDenied?.call(permission);
+          break;
 
         case PermissionStatus.permanentlyDenied:
           await onPermissionDeniedForever?.call(permission);
           if(openSetting){
             await openAppSettings();
           }
+          break;
 
         case PermissionStatus.limited:
           await onPermissionLimited?.call(permission);
+          break;
 
         default:
           return;

@@ -56,8 +56,8 @@ dependencies:
   dio: ^5.8.0+1
   http: ^1.4.0
   equatable:
-#  pagify:
-#    git: https://github.com/ahmedemara231/pagination_helper
+  pagify:
+    git: https://github.com/ahmedemara231/pagination_helper
 
 dev_dependencies:
   flutter_test:
