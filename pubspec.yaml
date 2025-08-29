@@ -55,6 +55,7 @@ dependencies:
   custom_refresh_indicator: ^4.0.1
   dio: ^5.8.0+1
   http: ^1.4.0
+  multiple_result: ^5.1.0
   equatable:
   pagify:
     git: https://github.com/ahmedemara231/pagination_helper
