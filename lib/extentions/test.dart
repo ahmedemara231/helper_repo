@@ -9,12 +9,13 @@ class ExtensionsTest extends StatelessWidget {
   const ExtensionsTest({super.key});
 
   Future<void> _anyNormalFuture()async{
+    log('enter');
     await Future.delayed(const Duration(seconds: 5));
   }
 
   Future<Result<int, String>> _anyMultiResultFuture()async{
     try {
-      await Future.delayed(const Duration(seconds: 5));
+      await Future.delayed(const Duration(seconds: 2));
       return Result.success(1);
 
     } on Exception catch (e) {
@@ -23,14 +24,21 @@ class ExtensionsTest extends StatelessWidget {
   }
 
   void _test()async{
-    // final result = _anyNormalFuture()..openTimer(executeOver: ,onTimerChanged: onTimerChanged);
+    // final result = _anyNormalFuture()..openTimer(executeOver: const Duration(seconds: 2),
+    //     onTimerChanged: (time) => log('message'));
 
-    // final result = _anyMultiResultFuture()..on(
-    //   onLoading: ,
-    //   onSuccess: ,
-    //   onError: ,
+    
+     _anyMultiResultFuture()..on(
+      onLoading: () => log('loading'),
+      onSuccess: (data) => log('onSuccess'),
+      onError: (error) => log('onError'),
+    )..openTimer(executeOver: const Duration(seconds: 2),
+         onTimerChanged: (time) => log('message'));
+
+    // final result = _anyNormalFuture().retry(
+    //   triesNumber: 3,
+    //   onFail: (n, e) => log('$e $n')
     // );
-
   }
 
   @override

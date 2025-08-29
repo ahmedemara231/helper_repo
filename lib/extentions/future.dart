@@ -9,43 +9,44 @@ extension FutureTimer<T> on Future<T>{
     });
   }
 
-  Future<void> measureTime(void Function(Duration duration) callback) async {
+  Future<T> measureTime(void Function(Duration duration) callback) async {
     final start = DateTime.now();
-    await this;
+    final result = await this;
     final end = DateTime.now();
     callback(end.difference(start));
+    return result;
   }
 
-  Future<void> delayBefore(Duration duration) async {
+  Future<T> delayBefore(Duration duration) async {
     await Future.delayed(duration);
-    await this;
+    return await this;
   }
 
-  Future<void> retry({
-    required int triesNumber,
-    FutureOr<void> Function(int failTryIndex)? onFail,
-    FutureOr<void> Function()? onFinallyFail,
-  })async{
-    int numberOfTries = 0;
-    for(int i = 0; i < triesNumber; i++){
-      try {
-        numberOfTries ++;
-        await this;
-      } on Exception catch (e) {
-        if(numberOfTries == triesNumber){
-          onFinallyFail?.call();
-
-        }else{
-          await onFail?.call(numberOfTries);
-        }
-      }
-    }
-  }
+  // Future<void> retry({
+  //   required int triesNumber,
+  //   FutureOr<void> Function(int failTryIndex, Exception e)? onFail,
+  //   FutureOr<void> Function(Exception e)? onFinallyFail,
+  // })async{
+  //   int numberOfTries = 0;
+  //   for(int i = 0; i < triesNumber; i++){
+  //     try {
+  //       numberOfTries ++;
+  //       await this;
+  //     } on Exception catch (e) {
+  //       if(numberOfTries == triesNumber){
+  //         onFinallyFail?.call(e);
+  //
+  //       }else{
+  //         await onFail?.call(numberOfTries, e);
+  //       }
+  //     }
+  //   }
+  // }
 
 }
 
 extension FutureHelpers<T,E> on Future<Result<T,E>>{
-  void on({
+  Future<void> on({
     FutureOr<void> Function()? onLoading,
     FutureOr<void> Function(T data)? onSuccess,
     FutureOr<void> Function(E error)? onError,
