@@ -31,7 +31,7 @@ class _PagifyTestState extends State<PagifyTest> {
     // if(currentPage == 1){
     //   throw DioException(requestOptions: RequestOptions());
     // }
-    final items = List.generate(10, (index) => 'Item $index');
+    final items = List.generate(30, (index) => 'Item $index');
     return ExampleModel(items: items, totalPages: 4);
   }
 
@@ -54,34 +54,46 @@ class _PagifyTestState extends State<PagifyTest> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('Example Usage')),
-        body: Pagify<ExampleModel, String>.gridView(
-            isReverse: false,
-            showNoDataAlert: true,
-            controller: _easyPaginationController,
-            asyncCall: (context, page)async => await _fetchData(page),
-            mapper: (response) => PagifyData(
+        appBar: AppBar(title: const Text('Example Usage', style: TextStyle(color: Colors.teal),)),
+        body: Pagify<ExampleModel, String>.listView(
+          isReverse: true,
+          itemExtent: 100,
+          cacheExtent: 1,
+          showNoDataAlert: true,
+          controller: _easyPaginationController,
+          asyncCall: (context, page)async => await _fetchData(page),
+          mapper: (response) => PagifyData(
                 data: response.items,
                 paginationData: PaginationData(
                   totalPages: response.totalPages,
                   perPage: 10,
                 )
             ),
-            errorMapper: PagifyErrorMapper(
-              errorWhenDio: (e) => 'e.response?.data['']', // if you using Dio
-              errorWhenHttp: (e) => 'e.message', // if you using Http
-            ),
-            itemBuilder: (context, data, index, element) => Center(
-                child: InkWell(
-                    onTap: (){
-                      log('enter here');
-                      _easyPaginationController.addAtBeginning('otieuytoiuet');
+          errorMapper: PagifyErrorMapper(
+            errorWhenDio: (e) => 'e.response?.data['']', // if you using Dio
+            errorWhenHttp: (e) => 'e.message', // if you using Http
+          ),
+          itemBuilder: (context, data, index, element) => Center(
+              child: InkWell(
+                  onTap: (){
+                    // log('enter here');
+                    // _easyPaginationController.addAtBeginning('otieuytoiuet');
                     },
-                    child: AppText(element, fontSize: 20,).paddingSymmetric(vertical: 10))
-            ),
-            onLoading: () => log('loading now ...!'),
-            onSuccess: (context, data) => log('the data is ready $data'),
-            onError: (context, page, e) async{
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      height: 100,
+                      width: 50,
+                      color: Colors.red,
+                      child: AppText(element.toString()),
+                    ),
+                  ),
+                  // child: Text('Example Usage', style: TextStyle(color: Colors.teal, fontSize: 40),).paddingSymmetric(vertical: 10)
+              )
+          ),
+          onLoading: () => log('loading now ...!'),
+          onSuccess: (context, data) => log('the data is ready $data'),
+          onError: (context, page, e) async{
             await Future.delayed(const Duration(seconds: 2));
             count++;
             if(count > 3){

@@ -549,10 +549,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "9de48be609671ff564b86bc51d265003aa5047c6"
+      resolved-ref: d833023c5bd2476d7d3c9028e0927a2151ebb7b5
       url: "https://github.com/ahmedemara231/pagination_helper"
     source: git
-    version: "0.1.2"
+    version: "0.2.0"
   path:
     dependency: transitive
     description:
