@@ -10,6 +10,7 @@ import 'package:helper_repo/widgets/route_aware/route_aware.dart';
 import 'package:helper_repo/widgets/route_aware/route_observer.dart';
 import 'package:helper_repo/widgets/route_aware/test.dart';
 import 'package:helper_repo/widgets/socket_widget/test.dart';
+import 'package:helper_repo/widgets/timer_test.dart';
 
 import 'helpers/permission_handler/test.dart';
 
@@ -49,7 +50,7 @@ class _MyAppState extends State<MyApp> {
         AppNavigationObserver.instance,
         // AppRouteObserver.instance
       ],
-      home: const PagifyTest(),
+      home: const TimerTest(),
     );
   }
 }
