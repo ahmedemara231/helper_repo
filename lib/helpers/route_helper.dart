@@ -12,48 +12,33 @@ class RouteHelper{
     _init();
   }
 
-  late final NavigatorState navigator;
+  late final NavigatorState _navigator;
 
   void _init(){
-    navigator = Navigator.of(context);
+    _navigator = Navigator.of(context);
   }
 
-  bool get canPop{
-    return navigator.canPop();
-  }
+  BuildContext get getContext => _navigator.context;
+  bool get canPop => _navigator.canPop();
 
-  void popUntil(bool Function(Route<dynamic>) condition){
-    navigator.popUntil(condition);
-  }
+  void popUntil(bool Function(Route<dynamic>) condition) => _navigator.popUntil(condition);
 
-  void removeRoute(Route<dynamic> route){
-    navigator.removeRoute(route);
-  }
+  void removeRoute(Route<dynamic> route) => _navigator.removeRoute(route);
 
-  void removeRoutesBelow(Route<dynamic> anchorRoute){
-    navigator.removeRouteBelow(anchorRoute);
-  }
+  void removeRoutesBelow(Route<dynamic> anchorRoute) => _navigator.removeRouteBelow(anchorRoute);
 
-  RouteSettings? getSettingForRoute<T>(){
-    return ModalRoute.of<T>(context)?.settings;
-  }
+  RouteSettings? getSettingForRoute<T>() => ModalRoute.of<T>(context)?.settings;
 
-  bool get isCurrent{
-    return ModalRoute.of(context)?.isCurrent?? false;
-  }
+  bool get isCurrent => ModalRoute.of(context)?.isCurrent?? false;
 
-  bool get isFirst{
-    return ModalRoute.of(context)?.isFirst?? false;
-  }
+  bool get isFirst => ModalRoute.of(context)?.isFirst?? false;
 
-  BuildContext? get subtreeContext{
-    return ModalRoute.of(context)?.subtreeContext;
-  }
+  BuildContext? get subtreeContext => ModalRoute.of(context)?.subtreeContext;
 
 
   void restorablePush(Widget page){
     RestorableScreen.setPage = page;
-    navigator.restorablePush(routeBuilder);
+    _navigator.restorablePush(routeBuilder);
   }
 }
 
