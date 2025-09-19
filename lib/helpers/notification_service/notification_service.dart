@@ -174,7 +174,7 @@ class NotificationService {
       tz.TZDateTime.now(tz.local).add(duration),
       _notificationDetails,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      // uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       payload: jsonEncode(message.toMap()),
     );
   }

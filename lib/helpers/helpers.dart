@@ -54,23 +54,26 @@ class Helpers{
   // }
   static Future<void> manageBlocListener(BaseStatus baseStatus, {
     String? msg,
-    FutureOr<void> Function()? actionWhenSuccess,
-    FutureOr<void> Function()? actionWhenError,
-    FutureOr<void> Function()? actionWhenLoading,
+    FutureOr<void> Function()? onSuccess,
+    FutureOr<void> Function()? onError,
+    FutureOr<void> Function()? onLoading,
   }) async{
     switch(baseStatus){
       case BaseStatus.loading:
-        await actionWhenLoading?.call();
+        await onLoading?.call();
 
       case BaseStatus.success:
-        await actionWhenSuccess?.call();
+        await onSuccess?.call();
         if(msg != null){
-          // MessageUtils.showSimpleToast(msg: msg, color: AppColors.primary);
+          // MessageUtils.showSnackBar(
+          //   msg,
+          //   // color: AppColors.primary,
+          // );
         }
         break;
 
       case BaseStatus.error:
-        await actionWhenError?.call();
+        await onError?.call();
         if(msg != null){
           // MessageUtils.showSimpleToast(msg: msg, color: Colors.red);
         }
