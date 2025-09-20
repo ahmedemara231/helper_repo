@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:helper_repo/helpers/notification_service/notification_service.dart';
 import 'package:helper_repo/widgets/easy_pagination.dart';
 import 'package:helper_repo/widgets/internet_supporter_widget/test.dart';
+import 'package:helper_repo/widgets/navigator_test/test.dart';
 import 'package:helper_repo/widgets/pop_scope_test/first_screen.dart' show FirstScreen;
 import 'package:helper_repo/widgets/pop_scope_test/zero_screen.dart';
 import 'package:helper_repo/widgets/route_aware/route_aware.dart';
@@ -55,7 +56,7 @@ class _MyAppState extends State<MyApp> {
         AppNavigationObserver.instance,
         // AppRouteObserver.instance
       ],
-      home: NotificationDemo(),
+      home: MainScreen(),
     );
   }
 }
