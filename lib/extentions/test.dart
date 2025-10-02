@@ -3,14 +3,20 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:helper_repo/extentions/future.dart';
 import 'package:helper_repo/widgets/base_widgets/text.dart';
+import 'package:helper_repo/widgets/easy_pagination.dart';
 import 'package:multiple_result/multiple_result.dart';
 
-class ExtensionsTest extends StatelessWidget {
+class ExtensionsTest extends StatefulWidget {
   const ExtensionsTest({super.key});
 
+  @override
+  State<ExtensionsTest> createState() => _ExtensionsTestState();
+}
+
+class _ExtensionsTestState extends State<ExtensionsTest> {
   Future<void> _anyNormalFuture()async{
     log('enter');
-    await Future.delayed(const Duration(seconds: 5));
+    // await Future.delayed(const Duration(seconds: 5));
   }
 
   Future<Result<int, String>> _anyMultiResultFuture()async{
@@ -24,30 +30,37 @@ class ExtensionsTest extends StatelessWidget {
   }
 
   void _test()async{
-    // final result = _anyNormalFuture()..openTimer(executeOver: const Duration(seconds: 2),
-    //     onTimerChanged: (time) => log('message'));
+    //  _anyMultiResultFuture()..when(
+    //   onLoading: () => log('loading'),
+    //   onSuccess: (data) => log('onSuccess'),
+    //   onError: (error) => log('onError'),
+    // )..openTimer(
+    //    throwExceptionWhen: Duration(seconds: 100),
+    //      onTimeoutException: (e) => log('exceptionnnnn'),
+    //      onTimerChanged: (time) => log('message $time'),
+    //      key: ValueKey('1')
+    //  );
 
-    
-     _anyMultiResultFuture()..on(
-      onLoading: () => log('loading'),
-      onSuccess: (data) => log('onSuccess'),
-      onError: (error) => log('onError'),
-    )..openTimer(executeOver: const Duration(seconds: 2),
-         onTimerChanged: (time) => log('message'));
+    // _anyNormalFuture().measureTime((duration) => log('duration is ${duration.inSeconds}'));
 
-    // final result = _anyNormalFuture().retry(
-    //   triesNumber: 3,
-    //   onFail: (n, e) => log('$e $n')
-    // );
+    FutureDebouncer.run(action: () => _anyNormalFuture());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: TextButton(
-          onPressed: () => _test(),
-          child: AppText('click')
+      body: Column(
+        children: [
+          TextButton(
+              onPressed: () => _test(),
+              child: AppText('click')
+          ),
+          TextButton(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PagifyExample())),
+              child: AppText('click')
+          ),
+        ],
       ),
     );
   }

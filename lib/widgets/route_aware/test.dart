@@ -23,7 +23,7 @@ class RoureAwareTest extends StatelessWidget {
           child: InkWell(
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(
-                    builder: (context) => PagifyTest()
+                    builder: (context) => PagifyExample()
                 )
             ),
               child: Center(child: AppText('text', fontSize: 100,)))

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:helper_repo/widgets/padding.dart';
 import 'package:helper_repo/widgets/base_widgets/text.dart';
@@ -16,103 +17,102 @@ class ExampleModel{
   });
 }
 
-class PagifyTest extends StatefulWidget {
-  const PagifyTest({super.key});
+class PagifyExample extends StatefulWidget {
+  const PagifyExample({super.key});
 
   @override
-  State<PagifyTest> createState() => _PagifyTestState();
+  State<PagifyExample> createState() => _PagifyExampleState();
 }
 
-class _PagifyTestState extends State<PagifyTest> {
-
+class _PagifyExampleState extends State<PagifyExample> {
   Future<ExampleModel> _fetchData(int currentPage) async {
-    await Future.delayed(const Duration(seconds: 1)); // simulate api call with current page
-
-    // if(currentPage == 1){
-    //   throw DioException(requestOptions: RequestOptions());
-    // }
-    final items = List.generate(30, (index) => 'Item $index');
-    return ExampleModel(items: items, totalPages: 4);
+    await Future.delayed(const Duration(seconds: 2));
+    if(currentPage == 1){
+      throw DioException(requestOptions: RequestOptions());
+    }
+    final items = List.generate(25, (index) => 'Item $index');
+    return ExampleModel(items: items, totalPages: 2);
   }
 
-  late PagifyController<String> _easyPaginationController;
+  //
+  late PagifyController<String> _pagifyController;
   @override
   void initState() {
-    _easyPaginationController = PagifyController<String>();
+    _pagifyController = PagifyController<String>();
     super.initState();
   }
 
   @override
   void dispose() {
-    _easyPaginationController.dispose();
+    _pagifyController.dispose();
     super.dispose();
   }
 
   int count = 0;
-
-  /// pagify global key to use in controller
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(title: const Text('Example Usage', style: TextStyle(color: Colors.teal),)),
-        body: Pagify<ExampleModel, String>.listView(
-          isReverse: true,
-          itemExtent: 100,
-          cacheExtent: 1,
-          showNoDataAlert: true,
-          controller: _easyPaginationController,
-          asyncCall: (context, page)async => await _fetchData(page),
-          mapper: (response) => PagifyData(
+    return MaterialApp(
+      title: 'Awesome Button Example',
+      home: Scaffold(
+          appBar: AppBar(title: const Text('Example Usage')),
+          body: Pagify<ExampleModel, String>.gridView(
+            isReverse: false,
+            showNoDataAlert: true,
+            controller: _pagifyController,
+            asyncCall: (context, page)async => await _fetchData(page),
+            mapper: (response) => PagifyData(
                 data: response.items,
                 paginationData: PaginationData(
                   totalPages: response.totalPages,
                   perPage: 10,
                 )
             ),
-          errorMapper: PagifyErrorMapper(
-            errorWhenDio: (e) => 'e.response?.data['']', // if you using Dio
-            errorWhenHttp: (e) => 'e.message', // if you using Http
-          ),
-          itemBuilder: (context, data, index, element) => Center(
-              child: InkWell(
-                  onTap: (){
-                    // log('enter here');
-                    // _easyPaginationController.addAtBeginning('otieuytoiuet');
+            errorMapper: PagifyErrorMapper(
+              errorWhenDio: (e) => PagifyApiRequestException(
+                "e.response?.data['errorMsg']",
+                pagifyFailure: PagifyFailure(
+                  statusCode: 400,
+                  statusMsg: 'e.response?.statusMessage',
+                ),
+              ), // if you using Dio
+
+              // errorWhenHttp: (e) => PagifyApiRequestException(), // if you using Http
+            ),
+            itemBuilder: (context, data, index, element) => Center(
+                child: InkWell(
+                    onTap: (){
+                      log('enter here');
+                      _pagifyController.addAtBeginning('otieuytoiuet');
                     },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      height: 100,
-                      width: 50,
-                      color: Colors.red,
-                      child: AppText(element.toString()),
-                    ),
-                  ),
-                  // child: Text('Example Usage', style: TextStyle(color: Colors.teal, fontSize: 40),).paddingSymmetric(vertical: 10)
-              )
-          ),
-          onLoading: () => log('loading now ...!'),
-          onSuccess: (context, data) => log('the data is ready $data'),
-          onError: (context, page, e) async{
-            await Future.delayed(const Duration(seconds: 2));
-            count++;
-            if(count > 3){
-              return;
-            }
-            _easyPaginationController.retry();
+                    child: AppText(element, fontSize: 20,)
+                )
+            ),
+            onLoading: () => log('loading now ...!'),
+            onSuccess: (context, data) => log('the data is ready $data'),
+            onError: (context, page, e) async{
+              await Future.delayed(const Duration(seconds: 2));
+              count++;
+              if(count > 3){
+                return;
+              }
+
+              // _pagifyController.retry();
               log('page : $page');
+
               if(e is PagifyNetworkException){
                 log('check your internet connection');
 
-              }else if(e is ApiRequestException){
-                log('check your server ${e.msg}');
+              }else if(e is PagifyApiRequestException){
+                log(e.msg);
+                log(e.pagifyFailure.statusCode.toString());
+                log(e.pagifyFailure.statusMsg.toString());
 
               }else{
                 log('other error ...!');
               }
             },
 
-            ignoreErrorBuilderWhenErrorOccursAndListIsNotEmpty: false,
+            ignoreErrorBuilderWhenErrorOccursAndListIsNotEmpty: true,
             errorBuilder: (e) => Container(
                 color: e is PagifyNetworkException?
                 Colors.green: Colors.red,
@@ -124,7 +124,8 @@ class _PagifyTestState extends State<PagifyTest> {
             log('connected') : log('disconnected'),
 
             onUpdateStatus: (s) => log('message $s'),
-        )
+          )
+      ),
     );
   }
 }

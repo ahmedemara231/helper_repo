@@ -56,7 +56,7 @@ class _MyAppState extends State<MyApp> {
         AppNavigationObserver.instance,
         // AppRouteObserver.instance
       ],
-      home: MainScreen(),
+      home: PagifyExample(),
     );
   }
 }
